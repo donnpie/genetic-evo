@@ -1,0 +1,9 @@
+.vs/
+AiLibrary/bin/
+AiLibrary/obj/
+AiLibraryTest/bin/
+AiLibraryTest/obj/
+GeneticEvolution/bin/
+GeneticEvolution/obj/
+GeneticEvolution/App.config
+packages/
