@@ -84,7 +84,7 @@ namespace AiLibrary
             Console.Write(" ");
         }
         /// <summary>
-        /// Mutates the gene by flipping 1 bit
+        /// Mutates the gene by flipping a randomly selected bit
         /// </summary>
         /// <returns></returns>
         public Gene Mutate(Random r)

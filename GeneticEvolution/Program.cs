@@ -1,79 +1,42 @@
-﻿using System;
+﻿using AiLibrary;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AiLibrary;
 
 
 namespace GeneticEvolution
 {
     class Program
-    {
-        
+    {       
         static void Main(string[] args)
         {
-            //Program flow
-            //1. Initial setup (stays same for entire simulation)
-            ////world setup
-            //////world size Done
-            //////starting population Done
-            //////number of generations Done
-            //////number of steps per generation Done
-            //////impassible regions / barriers TODO
-            //////food TODO
-            //////select number of genes Done
-            //////Create goggas without weight matrices
-            ////////random starting position Done
-            ////////Generate random genome Done
-            //neural net setup (stays same for entire simulation)
-            ////neuron id Done
-            ////transfer function Done
-            ////Configure input neurons (and number) Done
-            ////select number of and Configure hidden neurons Done
-            ////Configure output neurons (and number) Done
-            //Genomic setup
-            //create brain
-            ////create weight matrices Done
-            //////for each gene in genome:
-            ////////decode Done
-            ////////fill weight matrices Done
-            //Define survival criteria
-            //2. Run simulation
-            //Run generation
-            //For each step in generation
-            //for each creature in generation
-            //calculate outputs of input neurons
-            //Calculate the inputs for hidden neurons
-            //calculate outputs of hidden neurons
-            //calculate the inputs for output neurons
-            //calculate the outputs of output neurons
-            //perform actions as per neural output
-            //record world snapshot
-            //Run suvival criteria for each gogga
-            //if gogga survives
-            //run mutation algorithm
-            //if mutated, recreate brain
-            //else kill
-            //Run next generation
-            //3. Inspect results
-            //Survival rate
-            //most prevalant genomes
-
+            var simWatch = new System.Diagnostics.Stopwatch();
+            simWatch.Start();
             //Test area
+            {
+                //double[,] matrix = new double[4, 3];
 
+                //double[] vector = new double[3];
+                //vector[0] = 1;
+                //vector[1] = 2;
+                //vector[2] = 3;
+
+                //double[] result = Utils.MMult(matrix, vector);
+
+
+
+            }
 
             #region World setup
             var w = new World
             (
-                size: new Size(500, 500),
-                initPop: 1000,
-                numOfGens: 1,
+                size: new Size(700, 700),
+                initPop: 3000,
+                numOfGens: 100,
                 stepsPerGen:500,
-                numOfGenes: 16,
-                numOfObstruct: 500,
-                numOfFoodCells: 3,
-                maxFoodValue: 10,
+                numOfGenes: 32,
+                numOfObstruct: 49000,
+                numOfFoodCells: 10000,
+                maxFoodValue: 100,
                 fitnessFunction: TestFitnessFunction, //TODO: improve how to select the fitness function. Maybe use enums?
                 sensorCount: 4,
                 hiddenNeuronCount: 3,
@@ -83,7 +46,8 @@ namespace GeneticEvolution
             w.CreateObstructions();
             w.CreateFood();
             w.CreateGoggas(w.InitialPopulation, w.Goggas);
-
+            //TODO: How many goggas created?
+            //todo: hOW much food was created?
             #endregion
             #region Neuron setup
             //TODO: Neurons should be encapsulated in world
@@ -124,9 +88,10 @@ namespace GeneticEvolution
             //TODO: Write test code for this section.
             w.CreateNeuralNets();
             #endregion
-            #region Main program loop
+            #region MAIN PROGRAM LOOP
             for (int i = 0; i < w.GenerationsCount; i++)
             {
+                Console.WriteLine($"Generation: {i}");
                 var genWatch = new System.Diagnostics.Stopwatch();
                 genWatch.Start();
                 for (int j = 0; j < w.StepsPerGeneration; j++)
@@ -147,6 +112,7 @@ namespace GeneticEvolution
                         }
                         //Calculate the inputs for hidden neurons
                         double[] hiddenNeuronInput = new double[w.HiddenNeuronCount];
+                        if (currentGogga.WeightMatrices.Count == 0) throw new InvalidOperationException("Runtime error: WeightMatrices not set for current gogga. Did you forget to run the CreateNeuralNet method?");
                         hiddenNeuronInput = Utils.MMult(currentGogga.WeightMatrices[0], sensorOutput);
                         //calculate outputs of hidden neurons
                         double[] hiddenNeuronOutput = new double[w.HiddenNeuronCount];
@@ -170,7 +136,7 @@ namespace GeneticEvolution
                         {
                             movement += (byte)(Math.Pow(2, m) * outputNeuronOutput[m]);
                         }
-                        DecodeMove(movement, currentGogga, w);
+                        currentGogga.DecodeMove(movement, w);
 
                         //Update gogga properties (eg age)
                         currentGogga.Age += 1;
@@ -187,22 +153,32 @@ namespace GeneticEvolution
 
                 //Calculate who survives
                 //TODO: Make this a method of world - this needs to be performed at the end of every generation
+                //Thought: make it such that different goggas have different survival criteria
+                //eg, predators must hunt to survive, prey must evade to survive
                 double sumOfFitness = 0;
+                double maxFitness = 0;
+                double minFitness = double.MaxValue;
                 foreach (var g in w.Goggas)
                 {
                     sumOfFitness += g.Fitness;
+                    maxFitness = Math.Max(maxFitness, g.Fitness);
+                    minFitness = Math.Min(minFitness, g.Fitness);
                 }
                 double avgFitness = sumOfFitness / w.Goggas.Count;
-                Console.WriteLine($"Average fitness: {avgFitness}");
+                Console.WriteLine($"Average fitness for generation: {avgFitness}");
+                Console.WriteLine($"Max fitness: {maxFitness}");
+                Console.WriteLine($"Min fitness: {minFitness}");
                 
-                int SurvivorCount = 0;
+                int survivorCount = 0;
                 int currentPopulationCount = w.Goggas.Count;
                 List<Gogga> nextGen = new List<Gogga>();
+                bool mutationHappened;
+                int mutationCount = 0;
                 foreach (var g in w.Goggas)
                 {
                     if (g.Fitness < avgFitness)
                     {
-                        //Unfit ones die
+                        //Unfit ones die without repoducing
                         g.Die(w.Cells);
                     }
                     else
@@ -211,211 +187,40 @@ namespace GeneticEvolution
                         w.Cells[g.CurrentPosition.X, g.CurrentPosition.Y].IsOccupied = false;
                         Position p = Position.GetNewRandomPositionNotOnObstruction(w);
                         w.Cells[p.X, p.Y].IsOccupied = true;
-                        var newGogga = g.SpawnExact(w, p); //TODO: add mutation
+                        //var newGogga = g.SpawnExact(w, p); //TODO: add mutation
+                        var newGogga = g.SpawnWithMutation(w, p, out mutationHappened); //TODO: add mutation
+                        if (mutationHappened) mutationCount += 1;
                         nextGen.Add(newGogga);
-                        SurvivorCount++;
+                        survivorCount++;
                     }
                 }
-                Console.WriteLine($"Death count: {SurvivorCount}");
-                //Replace dead ones with new ones with random genes
-                int topUp = SurvivorCount; 
-                w.CreateGoggas((ushort)topUp, nextGen);              
+                Console.WriteLine($"Number of survivors: {survivorCount} / {currentPopulationCount}");
+                Console.WriteLine($"Number of mutations: {mutationCount}");
+                //Add new goggas with with random genes to get back to the original count
+                int topUp = currentPopulationCount - survivorCount; 
+
+                w.CreateGoggas((ushort)topUp, nextGen);        
+                for (int m = survivorCount; m < nextGen.Count; m++)
+                {
+                    nextGen[m].CreateNeuralNet(w.SensorCount, w.HiddenNeuronCount, w.OutputNeuronCount);
+                }                                               //
                 w.Goggas = nextGen;
-                Console.WriteLine($"Occupied cells: {w.GetNumberOfOccupiedCells()}");
-                Console.WriteLine($"Occupation audit: {w.AuditCellOccupation()}");
+                //Console.WriteLine($"Occupied cells: {w.GetNumberOfOccupiedCells()}");
+                //Console.WriteLine($"Occupation audit: {w.AuditCellOccupation()}");
+                //todo: most prevalant genomes
 
                 Console.WriteLine($"Time to execute generation: {genWatch.Elapsed}");
             }
-            //end of simulation code goes here
+            //end of simulation code goes here (when all generations have run)
             #endregion
 
-
-
-
+            Console.WriteLine($"Time to execute simulation: {simWatch.Elapsed}");
         }
 
-
-
-        
         //TODO: find a more elegant way to declare various fitness functions (Maybe use enums??)
         public static double TestFitnessFunction(Gogga g)
         {
             return Position.GetDistBetweenTwoPositions(g.CurrentPosition, g.StartPosition);
         }
-
-        public static void DecodeMove(byte b, Gogga g, World w)
-        {
-            //output encoding: 
-            // 0: 0000: Don't move
-            // 1: 0001: move north 
-            // 2: 0010: move east
-            // 3: 0011: move northeast
-            // 4: 0100: move south
-            // 5: 0101: move random
-            // 6: 0110: move southeast
-            // 7: 0111: move random
-            // 8: 1000: move west
-            // 9: 1001: Move northwest
-            //10: 1010: move random
-            //11: 1011: move random
-            //12: 1100: Move southwest
-            //13: 1101: move random
-            //14: 1110: move random
-            //15: 1111: move random
-            switch (b)
-            {
-                case 0:
-                    return;
-                case 1:
-                    g.Move(w, Direction.North);
-                    return;
-                case 2:
-                    g.Move(w, Direction.East);
-                    return;
-                case 3:
-                    g.Move(w, Direction.NorthEast);
-                    return;
-                case 4:
-                    g.Move(w, Direction.South);
-                    return;
-                case 5:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                case 6:
-                    g.Move(w, Direction.SouthEast);
-                    return;
-                case 7:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                case 8:
-                    g.Move(w, Direction.West);
-                    return;
-                case 9:
-                    g.Move(w, Direction.NorthWest);
-                    return;
-                case 10:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                case 11:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                case 12:
-                    g.Move(w, Direction.SouthWest);
-                    return;
-                case 13:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                case 14:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                case 15:
-                    g.Move(w, Gogga.MoveRandom(w.Rand));
-                    return;
-                default:
-                    break;
-            }
-        }
-
-
     }
-    //How to convert hex string to number
-    //Method 1
-    //long hex = long.Parse("FFFFFFFF", System.Globalization.NumberStyles.HexNumber);
-    //Console.WriteLine($"{hex}");
-
-    //Method 2
-    //string hexString = "0xFFFFFFFF";
-    //long hexL = Convert.ToInt64(hexString, 16);
-    //Console.WriteLine($"{hexL}");
-
-    //Create a bunch of random genes
-    //Random rand = new Random();
-    //for (int j = 0; j < 100; j++)
-    //{
-    //    long number = GetRandomGene(4294967296, rand);
-    //    Console.WriteLine(Convert.ToString(number, 2));
-    //}
-
-    //How to convert a string binary representation of a number into a decimal number
-    //int binNum = 0b1111111; //Max address num
-    //Console.WriteLine(binNum);
-
-    //int inputNeuronCount = 3;
-    //int hiddenNeuronCount = 1;
-    //int outputNeuronCount = 2;
-    //float[,] weightsFirstLayer = new float[hiddenNeuronCount,inputNeuronCount];
-    //float[,] weightsSecondLayer = new float[outputNeuronCount, hiddenNeuronCount];
-
-    //Fill weights
-    //for (int r = 0; r < weightsFirstLayer.GetLength(0); r++)
-    //{
-    //    for (int c = 0; c < weightsFirstLayer.GetLength(1); c++)
-    //    {
-    //        weightsFirstLayer[r, c] = 0f;
-    //    }
-    //}
-
-    ////Gene data
-    //Random rand = new Random();
-    //bool isSecondLayer = false;
-    ////int sourceId = rand.Next(127);
-    ////int sinkId = rand.Next(127);
-    //int sourceId = 2;
-    //int sinkId = 0;
-    //Console.WriteLine($"source: {sourceId}, sink: {sinkId}");
-    //float weight = 3.4f;
-
-    //if (!isSecondLayer)
-    //{
-    //    int c = sourceId % inputNeuronCount;
-    //    int r = sinkId % hiddenNeuronCount;
-    //    Console.WriteLine($"r: {r}, c: {c}");
-    //    weightsFirstLayer[r, c] = weight;
-    //}
-    //else
-    //{
-    //    int c = sourceId % inputNeuronCount;
-    //    int r = sinkId % hiddenNeuronCount;
-    //    Console.WriteLine($"r: {r}, c: {c}");
-    //    weightsSecondLayer[r, c] = weight;
-    //}
-
-    //for (int r = 0; r < weightsFirstLayer.GetLength(0); r++)
-    //{
-    //    for (int c = 0; c < weightsFirstLayer.GetLength(1); c++)
-    //    {
-    //        Console.WriteLine(weightsFirstLayer[r, c]);
-    //    }
-    //}
-
-    //int geneCount = 8;
-    //const long MAXVAL = 4294967296;
-    //Random rand = new Random();
-    //long[] genome = GetRandomGenome(geneCount, MAXVAL, rand);
-    //PrintGenome(genome);
-
-
-    //"FFFFFFFF"
-    //"0FFFFFFF"
-    //"F0000000"
-    //long hex = long.Parse("0000FFFF", System.Globalization.NumberStyles.HexNumber);
-    //PrintGene(hex);
-    //Console.WriteLine();
-    //PrintBinary(hex);
-    //Console.WriteLine(GetLayer(hex));
-    //GetSourceAddress(hex);
-    //GetSinkAddress(hex);
-    //Console.WriteLine(GetWeight(hex, 0));
-    //float max = 0;
-    //float min = 0;
-    //for (int i = 0; i < 100; i++)
-    //{
-    //    long gene = GetRandomGene(MAXVAL, rand);
-    //    float result = GetWeight(gene, 500000000.0f);
-    //    max = result > max ? result : max;
-    //    min = result < min ? result : min;
-    //}
-    //Console.WriteLine($"{max} {min}");
-
-
 }

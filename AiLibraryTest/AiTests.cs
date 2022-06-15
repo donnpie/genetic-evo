@@ -530,6 +530,40 @@ namespace AiLibraryTest
             Assert.Equal(32, result[1]);
             Assert.Equal(50, result[2]);
             Assert.Equal(68, result[3]);
+        }
+        [Fact]
+        public void MMult_PassNullVector_ShouldThrowError()
+        {
+            double[,] matrix = new double[4, 3];
+            matrix[0, 0] = 1;
+            matrix[0, 1] = 2;
+            matrix[0, 2] = 3;
+            matrix[1, 0] = 4;
+            matrix[1, 1] = 5;
+            matrix[1, 2] = 6;
+            matrix[2, 0] = 7;
+            matrix[2, 1] = 8;
+            matrix[2, 2] = 9;
+            matrix[3, 0] = 10;
+            matrix[3, 1] = 11;
+            matrix[3, 2] = 12;
+
+            double[] vector = null;
+
+            Assert.Throws<ArgumentException>(() => Utils.MMult(matrix, vector));
+
+        }
+        [Fact]
+        public void MMult_PassNullMatrix_ShouldThrowError()
+        {
+            double[,] matrix = null;
+
+            double[] vector = new double[3];
+            vector[0] = 1;
+            vector[1] = 2;
+            vector[2] = 3;
+
+            Assert.Throws<ArgumentException>(() => Utils.MMult(matrix, vector));
 
         }
         [Theory]

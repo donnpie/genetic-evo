@@ -49,19 +49,111 @@ namespace AiLibrary
             WeightMatrices = new List<double[,]>();
             FitnessFunction = fitnessFunction;
         }
+        /// <summary>
+        /// Returns an empty array of type double with rows = outputCount
+        /// and columns = inputCount
+        /// </summary>
+        /// <param name="inputCount"></param>
+        /// <param name="outputCount"></param>
+        /// <returns></returns>
         public static double[,] CreateWeightMatrix(int inputCount, int outputCount) 
         {
             return new double[outputCount, inputCount];
         }
-        public static Direction GetRandomDirection(Random rand)
+        /// <summary>
+        /// Returns a random Direction object
+        /// </summary>
+        /// <param name="r"></param>
+        /// <returns></returns>
+        public static Direction GetRandomDirection(Random r)
         {
-            Array directions = Enum.GetValues(typeof(Direction));
-            return (Direction)directions.GetValue(rand.Next(directions.Length));
+            return (Direction)r.Next(8);
         }
+        /// <summary>
+        /// Sets IsAlive = false and sets corresponding cell's IsOccupied to false
+        /// </summary>
+        /// <param name="cells"></param>
         public void Die(Cell[,] cells)
         {
             IsAlive = false;
             cells[CurrentPosition.X, CurrentPosition.Y].IsOccupied = false;
+        }
+        /// <summary>
+        /// Decodes the output of the neural network and moves gogga accordingly
+        /// </summary>
+        /// <param name="b"></param>
+        /// <param name="w"></param>
+        public void DecodeMove(byte b, World w)
+        {
+            //output encoding: 
+            // 0: 0000: Don't move
+            // 1: 0001: move north 
+            // 2: 0010: move east
+            // 3: 0011: move northeast
+            // 4: 0100: move south
+            // 5: 0101: move random
+            // 6: 0110: move southeast
+            // 7: 0111: move random
+            // 8: 1000: move west
+            // 9: 1001: Move northwest
+            //10: 1010: move random
+            //11: 1011: move random
+            //12: 1100: Move southwest
+            //13: 1101: move random
+            //14: 1110: move random
+            //15: 1111: move random
+            switch (b)
+            {
+                case 0:
+                    return;
+                case 1:
+                    Move(w, Direction.North);
+                    return;
+                case 2:
+                    Move(w, Direction.East);
+                    return;
+                case 3:
+                    Move(w, Direction.NorthEast);
+                    return;
+                case 4:
+                    Move(w, Direction.South);
+                    return;
+                case 5:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                case 6:
+                    Move(w, Direction.SouthEast);
+                    return;
+                case 7:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                case 8:
+                    Move(w, Direction.West);
+                    return;
+                case 9:
+                    Move(w, Direction.NorthWest);
+                    return;
+                case 10:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                case 11:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                case 12:
+                    Move(w, Direction.SouthWest);
+                    return;
+                case 13:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                case 14:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                case 15:
+                    Move(w, Gogga.GetRandomDirection(w.Rand));
+                    return;
+                default:
+                    break;
+            }
         }
         /// <summary>
         /// Returns true if the move in the specified direction was successful
@@ -69,6 +161,7 @@ namespace AiLibrary
         /// <param name="w"></param>
         /// <param name="d"></param>
         /// <returns></returns>
+        /// 
         public bool Move(World w, Direction d)
         {
             //TODO: Write test code
@@ -180,9 +273,28 @@ namespace AiLibrary
                     throw new InvalidOperationException("Move method recieved invalid parameters");
             }
         }
-        public static Direction MoveRandom(Random r)
+        /// <summary>
+        /// Create the weight matrices for the gogga according to the genome
+        /// </summary>
+        /// <param name="sensorCount"></param>
+        /// <param name="hiddenNeuronCount"></param>
+        /// <param name="outputNeuronCount"></param>
+        public void CreateNeuralNet(int sensorCount, int hiddenNeuronCount, int outputNeuronCount)
         {
-            return (Direction)r.Next(8);
+            double[,] m1 = Gogga.CreateWeightMatrix(sensorCount, hiddenNeuronCount);
+            double[,] m2 = Gogga.CreateWeightMatrix(hiddenNeuronCount, outputNeuronCount);
+            WeightMatrices.Add(m1);
+            WeightMatrices.Add(m2);
+            for (int j = 0; j < Genome.Length(); j++)
+            {
+                DecodedGene dg = Genome.Genes[j].DecodeGene(Gene.SCALE);
+                if (!dg.Layer)
+                {
+                    m1[dg.SinkAddress % hiddenNeuronCount, dg.SourceAddress % sensorCount] = dg.Weight;
+                }
+                else
+                    m2[dg.SinkAddress % outputNeuronCount, dg.SourceAddress % hiddenNeuronCount] = dg.Weight;
+            }
         }
         /// <summary>
         /// Creates a copy of itself at a given position with exact same genome
@@ -203,6 +315,35 @@ namespace AiLibrary
                 WeightMatrices = this.WeightMatrices,
                 FitnessFunction = this.FitnessFunction
             };
+            return g;
+        }
+        /// <summary>
+        /// Creates a copy of itself at a given position with a genome that is possibly mutated.
+        /// If the genome is mutated, the weight matrices are recalculated
+        /// </summary>
+        /// <param name="w"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public Gogga SpawnWithMutation(World w, Position p, out bool mutationHappened)
+        {
+            //TODO: Create test code
+            var g = new Gogga((ushort)this.Genome.Length())
+            {
+                Id = 0,
+                Age = 0,
+                Excitation = 0,
+                IsAlive = true,
+                LastDirection = Gogga.GetRandomDirection(w.Rand),
+                CurrentPosition = p,
+                StartPosition = new Position(CurrentPosition),
+                Genome = this.Genome.Mutate(w.Rand, out mutationHappened, w.MutationRate),
+                FitnessFunction = this.FitnessFunction
+            };
+            if (mutationHappened)
+            {
+                g.CreateNeuralNet(w.SensorCount, w.HiddenNeuronCount, w.OutputNeuronCount);
+            }
+            else g.WeightMatrices = this.WeightMatrices;
             return g;
         }
     }

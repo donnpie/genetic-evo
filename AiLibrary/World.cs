@@ -33,6 +33,14 @@ namespace AiLibrary
                 else initialPopulation = value;
             }
         }
+        double mutationRate;
+        public double MutationRate { get { return mutationRate; }
+            set
+            {
+                if (value < 0) {throw new ArgumentException("Mutation rate cannot be less than 0."); }
+                mutationRate = value;
+            }
+        }
         //Fitness function setup - TODO: add as property to world
         public Func<Gogga, double> FitnessFunction;
         public Random Rand { get; private set; }
@@ -175,7 +183,8 @@ namespace AiLibrary
         /// <summary>
         /// Creates a list of new Goggas with random positions and random genomes. 
         /// Obstructed and occupied cells are ignored so that Goggas are only placed on available cells.
-        /// Returns the actual number of goggas that were created
+        /// Returns the actual number of goggas that were created - this may not always be equal to
+        /// the number that was requested.
         /// </summary>
         /// <param name="numberOfGoggas">The number of new goggas to be created</param>
         /// <param name="goggaList">The list to which the goggas will be added</param>
@@ -190,8 +199,10 @@ namespace AiLibrary
             {
                 for (int j = 0; j < Cells.GetLength(1); j++)
                 {
-                    if (!Cells[i, j].IsObstructed || !Cells[i, j].IsOccupied) 
+                    if (!Cells[i, j].IsObstructed && !Cells[i, j].IsOccupied)
                         availableCells.Add(Cells[i, j]);
+                    else
+                        continue;
                 }
             }
             int availableCellCount = availableCells.Count;
@@ -209,36 +220,26 @@ namespace AiLibrary
                     //it will not always be possible to create the target number of cells
                     //especially when the map has very few available cells left
                     watchdog++;
-                    if (watchdog > 100) break;
+                    if (watchdog > 500) break;
                     continue;
                 }
                 var g = new Gogga((ushort)k, 0, 0, Gogga.GetRandomDirection(Rand), p, 8, FitnessFunction);
                 g.Genome = Genome.GetNewRandomGenome(GeneCount, Rand);
-                randomCell.IsOccupied = true;
+                randomCell.IsOccupied = true; //Need to mark cells as occupied
                 goggaList.Add(g);
                 k++;
             }
             return k;
         }
+        /// <summary>
+        /// Create weight matrices for all goggas in Goggas list according to each gogga's genome
+        /// </summary>
         public void CreateNeuralNets()
         {
+            //TODO: write test code
             for (int i = 0; i < Goggas.Count; i++)
             {
-                double[,] m1 = Gogga.CreateWeightMatrix(SensorCount, HiddenNeuronCount);
-                double[,] m2 = Gogga.CreateWeightMatrix(HiddenNeuronCount, OutputNeuronCount);
-                Goggas[i].WeightMatrices.Add(m1);
-                Goggas[i].WeightMatrices.Add(m2);
-                for (int j = 0; j < Goggas[i].Genome.Length(); j++)
-                {
-                    DecodedGene dg = Goggas[i].Genome.Genes[j].DecodeGene(Gene.SCALE);
-                    //fill weight matrices
-                    if (!dg.Layer)
-                    {
-                        m1[dg.SinkAddress % HiddenNeuronCount, dg.SourceAddress % SensorCount] = dg.Weight;
-                    }
-                    else
-                        m2[dg.SinkAddress % OutputNeuronCount, dg.SourceAddress % HiddenNeuronCount] = dg.Weight;
-                }
+                Goggas[i].CreateNeuralNet(SensorCount, HiddenNeuronCount, OutputNeuronCount);
             }
         }
         /// <summary>

@@ -101,6 +101,8 @@ namespace AiLibrary
         /// <returns></returns>
         public static double[] MMult(double[,] matrix, double[] vector)
         {
+            if (matrix == null) throw new ArgumentException("The matrix argument cannot be null");
+            if (vector == null) throw new ArgumentException("The vector argument cannot be null");
             int mRows = matrix.GetLength(0);
             int mCols = matrix.GetLength(1);
             int vRows = vector.GetLength(0);
