@@ -1,0 +1,10 @@
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\bin\Debug\GenEvoFormsApp.exe.config
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\bin\Debug\GenEvoFormsApp.exe
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\bin\Debug\GenEvoFormsApp.pdb
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.csproj.AssemblyReference.cache
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.frmGenEvo.resources
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.Properties.Resources.resources
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.csproj.GenerateResource.cache
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.csproj.CoreCompileInputs.cache
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.exe
+C:\Users\donnp\source\repos\GeneticEvolution\GenEvoFormsApp\obj\Debug\GenEvoFormsApp.pdb

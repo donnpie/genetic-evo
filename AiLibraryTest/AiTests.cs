@@ -131,7 +131,8 @@ namespace AiLibraryTest
                 fitnessFunction: null, //TODO: FIX this
                 sensorCount: 3,
                 hiddenNeuronCount: 3,
-                outputNeuronCount: 3
+                outputNeuronCount: 3,
+                mutationRate: 0.01
             );
             Assert.Throws<InvalidOperationException>(()=> w.CreateObstructions());
         }
@@ -202,7 +203,8 @@ namespace AiLibraryTest
                 fitnessFunction: null, //TODO: FIX this
                 sensorCount: 3,
                 hiddenNeuronCount: 3,
-                outputNeuronCount: 3
+                outputNeuronCount: 3,
+                mutationRate: 0.01
             );
             Assert.Throws<InvalidOperationException>(() => w.CreateFood());
         }
@@ -601,7 +603,8 @@ namespace AiLibraryTest
                 fitnessFunction: null, //TODO: FIX this
                 sensorCount: 4,
                 hiddenNeuronCount: 4,
-                outputNeuronCount: 4
+                outputNeuronCount: 4,
+                mutationRate: 0.01
             );
             w.CreateCells();
             Gogga g = new Gogga(1);
@@ -639,7 +642,8 @@ namespace AiLibraryTest
                 fitnessFunction: null, //TODO: FIX this
                 sensorCount: 4,
                 hiddenNeuronCount: 4,
-                outputNeuronCount: 4
+                outputNeuronCount: 4,
+                mutationRate: 0.01
             );
             w.CreateCells();
             Gogga g = new Gogga(1);
@@ -671,7 +675,8 @@ namespace AiLibraryTest
                 fitnessFunction: null, //TODO: FIX this
                 sensorCount: 4,
                 hiddenNeuronCount: 4,
-                outputNeuronCount: 4
+                outputNeuronCount: 4,
+                mutationRate: 0.01
             );
             w.CreateCells();
             Gogga g = new Gogga(1);

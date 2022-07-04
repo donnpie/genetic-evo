@@ -37,7 +37,8 @@ namespace AiLibrary
         public double MutationRate { get { return mutationRate; }
             set
             {
-                if (value < 0) {throw new ArgumentException("Mutation rate cannot be less than 0."); }
+                if (value < 0) {throw new ArgumentException("Mutation rate must be between 0 and 1"); }
+                if (value > 1) {throw new ArgumentException("Mutation rate must be between 0 and 1"); }
                 mutationRate = value;
             }
         }
@@ -99,7 +100,8 @@ namespace AiLibrary
         public World(Size size, ushort initPop, uint numOfGens, ushort stepsPerGen,
                 ushort numOfGenes, ushort numOfObstruct, ushort numOfFoodCells,
                 ushort maxFoodValue, Func<Gogga, double> fitnessFunction,
-                int sensorCount, int hiddenNeuronCount, int outputNeuronCount
+                int sensorCount, int hiddenNeuronCount, int outputNeuronCount,
+                double mutationRate
         )
         {
             Size = size;
@@ -122,6 +124,7 @@ namespace AiLibrary
             HiddenNeurons = new Neuron[HiddenNeuronCount];
             OutputNeuronCount = outputNeuronCount;
             OutputNeurons = new Neuron[OutputNeuronCount];
+            MutationRate = mutationRate;
         }
         public void CreateCells()
         {

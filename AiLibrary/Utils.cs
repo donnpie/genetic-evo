@@ -33,6 +33,15 @@ namespace AiLibrary
             if (input >= 0.5) return 1;
             else return 0;
         }
+        /// <summary>
+        /// Always produces an output of zero
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static double Off(double input)
+        {
+            return 0;
+        }
         #endregion
         #region Functions for sensors
         /// <summary>

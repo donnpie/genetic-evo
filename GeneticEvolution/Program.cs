@@ -13,14 +13,7 @@ namespace GeneticEvolution
             simWatch.Start();
             //Test area
             {
-                //double[,] matrix = new double[4, 3];
-
-                //double[] vector = new double[3];
-                //vector[0] = 1;
-                //vector[1] = 2;
-                //vector[2] = 3;
-
-                //double[] result = Utils.MMult(matrix, vector);
+                
 
 
 
@@ -40,8 +33,9 @@ namespace GeneticEvolution
                 fitnessFunction: TestFitnessFunction, //TODO: improve how to select the fitness function. Maybe use enums?
                 sensorCount: 4,
                 hiddenNeuronCount: 3,
-                outputNeuronCount: 4
-                );
+                outputNeuronCount: 4,
+                mutationRate: 0.01
+            );
             w.CreateCells();
             w.CreateObstructions();
             w.CreateFood();
@@ -51,8 +45,7 @@ namespace GeneticEvolution
             #endregion
             #region Neuron setup
             //TODO: Neurons should be encapsulated in world
-            //Input neurons
-
+            //Sensors
             for (int i = 0; i < w.Sensors.Length; i++)
             {
                 //Give the sensors ids

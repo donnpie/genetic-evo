@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiLibrary", "AiLibrary\AiLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiLibraryTest", "AiLibraryTest\AiLibraryTest.csproj", "{813584BB-B97D-4C44-A6BB-8FA161BC197A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenEvoFormsApp", "GenEvoFormsApp\GenEvoFormsApp.csproj", "{9E6F74C2-C478-4B7E-9188-9BF99E600D11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{813584BB-B97D-4C44-A6BB-8FA161BC197A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{813584BB-B97D-4C44-A6BB-8FA161BC197A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{813584BB-B97D-4C44-A6BB-8FA161BC197A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E6F74C2-C478-4B7E-9188-9BF99E600D11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E6F74C2-C478-4B7E-9188-9BF99E600D11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E6F74C2-C478-4B7E-9188-9BF99E600D11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E6F74C2-C478-4B7E-9188-9BF99E600D11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
